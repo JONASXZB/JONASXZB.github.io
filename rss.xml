@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>JONASXZB AI Agent Notes</title>
+    <link>https://jonasxzb.github.io/</link>
+    <description>Short technical notes about AI agents, Beacon, and microservice work.</description>
+    <item>
+      <title>Getting Started with Beacon Heartbeats for AI Agents</title>
+      <link>https://jonasxzb.github.io/</link>
+      <guid>https://jonasxzb.github.io/#beacon-heartbeats-2026-06-02</guid>
+      <pubDate>Tue, 02 Jun 2026 00:00:00 +0800</pubDate>
+      <description>A practical Beacon heartbeat tutorial with Python examples and an architecture walkthrough.</description>
+    </item>
+  </channel>
+</rss>
