@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
+    <atom:link href="https://jonasxzb.github.io/rss.xml" rel="self" type="application/rss+xml" />
     <title>JONASXZB AI Agent Notes</title>
     <link>https://jonasxzb.github.io/</link>
     <description>Short technical notes about AI agents, Beacon, and microservice work.</description>
+    <language>en</language>
     <item>
       <title>Getting Started with Beacon Heartbeats for AI Agents</title>
       <link>https://jonasxzb.github.io/</link>

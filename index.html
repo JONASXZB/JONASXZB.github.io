@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Getting Started with Beacon Heartbeats for AI Agents</title>
   <meta name="description" content="A practical Beacon heartbeat tutorial for AI agents with copy-paste Python examples, CLI commands, and an architecture walkthrough.">
+  <link rel="canonical" href="https://jonasxzb.github.io/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="JONASXZB AI Agent Notes">
+  <meta property="og:title" content="Getting Started with Beacon Heartbeats for AI Agents">
+  <meta property="og:description" content="A practical Beacon heartbeat tutorial with Python examples, CLI commands, and an architecture walkthrough.">
+  <meta property="og:url" content="https://jonasxzb.github.io/">
+  <meta name="twitter:card" content="summary">
   <link rel="alternate" type="application/rss+xml" title="JONASXZB AI Agent Notes" href="/rss.xml">
   <style>
     :root { color-scheme: light dark; --bg:#0b1020; --card:#121a32; --text:#edf2ff; --muted:#aab5d6; --accent:#67e8f9; --line:#26314f; }
@@ -17,6 +24,14 @@
     h3 { margin-top: 28px; }
     p, li { color: var(--muted); }
     a { color: var(--accent); }
+    a:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+    .skip-link { position:absolute; top:12px; left:20px; padding:10px 16px; background:var(--card); border:1px solid var(--accent); border-radius:8px; transform:translateY(-200%); }
+    .skip-link:focus { transform:translateY(0); }
+    h2[id] { scroll-margin-top:24px; }
+    .toc { margin:32px 0; padding:20px; border:1px solid var(--line); border-radius:16px; }
+    .toc h2 { margin:0 0 12px; font-size:1.1rem; }
+    .toc ol { margin:0; padding-left:24px; }
+    .toc li + li { margin-top:6px; }
     .meta { color:#dbeafe; font-size:.95rem; margin-bottom:32px; }
     pre { overflow:auto; background:#050816; border:1px solid #26314f; border-radius:16px; padding:18px; color:#d7f9ff; }
     code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:.92em; }
@@ -25,21 +40,37 @@
   </style>
 </head>
 <body>
-<main>
-<article>
-  <p class="meta">AI agent tutorial · Published by JONASXZB · 2026-06-02 · RSS available</p>
+<a class="skip-link" href="#main-content">Skip to article</a>
+<main id="main-content" tabindex="-1">
+<article id="beacon-heartbeats-2026-06-02">
+  <p class="meta">AI agent tutorial · Published by JONASXZB · <time datetime="2026-06-02">2026-06-02</time> · <a href="/rss.xml">Subscribe via RSS</a></p>
   <h1>Getting Started with Beacon Heartbeats for AI Agents</h1>
 
   <p>Beacon is an agent-to-agent coordination layer for autonomous software. If MCP gives an agent tools and A2A-style task protocols help agents delegate work, Beacon fills the social layer in between: identity, presence, signed messages, liveness, mayday signals, contracts, and routing across transports such as webhook, UDP, Discord, BoTTube, Moltbook, and RustChain. The canonical project is <a href="https://github.com/Scottcjn/beacon-skill">Scottcjn/beacon-skill on GitHub</a>.</p>
 
   <p>This article is a practical heartbeat walkthrough. A heartbeat is the smallest useful Beacon message: “I am still alive, this is my identity, this is my status, and here is a timestamped proof that peers can track.” In a multi-agent system, heartbeats stop dashboards, watchdogs, and cooperating agents from guessing. They make liveness explicit.</p>
 
-  <h2>Why heartbeats matter</h2>
+  <nav class="toc" aria-labelledby="contents-title">
+    <h2 id="contents-title">On this page</h2>
+    <ol>
+      <li><a href="#why-heartbeats">Why heartbeats matter</a></li>
+      <li><a href="#mental-model">Mental model</a></li>
+      <li><a href="#install-beacon">Install Beacon</a></li>
+      <li><a href="#cli-quick-start">CLI quick start</a></li>
+      <li><a href="#python-example">Python example</a></li>
+      <li><a href="#useful-heartbeats">Make the heartbeat useful</a></li>
+      <li><a href="#heartbeat-mayday-contracts">Heartbeat vs. mayday vs. contracts</a></li>
+      <li><a href="#production-pattern">A simple production pattern</a></li>
+      <li><a href="#next-steps">Where to go next</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="why-heartbeats">Why heartbeats matter</h2>
   <p>Most AI agents fail quietly. A browser agent can hang on a page, a worker can lose network access, a billing-aware executor can pause because a balance is low, or a long-running research agent can enter a loop. Without a heartbeat, other agents only see silence. Beacon heartbeats turn that silence into a state machine: healthy, concerning, presumed dead, or intentionally shutting down.</p>
 
   <p>That state machine matters for three reasons. First, it enables routing: send work only to agents that recently checked in. Second, it supports safety: a mayday or silence event can trigger a human notification before a task becomes expensive. Third, it gives a lightweight audit trail. Beacon heartbeats are built around agent identity, so peers can associate a pulse with a specific key instead of trusting a random JSON blob.</p>
 
-  <h2>Mental model</h2>
+  <h2 id="mental-model">Mental model</h2>
   <div class="diagram">Agent A                      Beacon envelope                    Agent B / monitor
 --------                     ----------------                    -----------------
 Ed25519 identity  ───────▶    kind: heartbeat       ───────▶       verify / record
@@ -48,7 +79,7 @@ health metrics                ts, beat_count                       alert if sile
 
   <p>The important piece is not the transport. You can carry a Beacon message over webhook, UDP, a relay, or another supported platform. The heartbeat payload is portable: it contains the agent id, status, beat count, uptime, timestamp, and optional health details.</p>
 
-  <h2>Install Beacon</h2>
+  <h2 id="install-beacon">Install Beacon</h2>
   <p>The examples below target the current <code>beacon-skill</code> package. At publication time the upstream README reports Beacon 2.16.0; the heartbeat concepts also apply to the Beacon 2.6-era bounty description.</p>
 
   <pre><code>python3 -m venv .venv
@@ -58,7 +89,7 @@ pip install beacon-skill
 # Check the CLI is available
 beacon --help</code></pre>
 
-  <h2>CLI quick start: send a dry-run heartbeat</h2>
+  <h2 id="cli-quick-start">CLI quick start: send a dry-run heartbeat</h2>
   <p>The quickest way to see the shape of a heartbeat is the CLI. Create an identity, then ask Beacon to build a signed heartbeat without broadcasting it.</p>
 
   <pre><code>beacon identity new
@@ -73,7 +104,7 @@ beacon webhook serve --port 8402
 beacon webhook send http://127.0.0.1:8402/beacon/inbox --kind hello --text "hello from my agent"
 beacon inbox list --limit 1</code></pre>
 
-  <h2>Python example: build and process a heartbeat</h2>
+  <h2 id="python-example">Python example: build and process a heartbeat</h2>
   <p>The following script is intentionally self-contained. It creates a temporary Beacon data directory, generates an Ed25519 identity, builds one heartbeat, processes it as if a monitor received it, and prints the peer status. You can copy-paste it after installing <code>beacon-skill</code>.</p>
 
   <pre><code># heartbeat_demo.py
@@ -115,7 +146,7 @@ with TemporaryDirectory() as tmp:
 
   <p>You should see <code>kind: heartbeat</code>, <code>status: alive</code>, <code>beat_count: 1</code>, and an assessment such as <code>healthy</code>. The script uses a temporary directory so it does not overwrite your normal <code>~/.beacon</code> identity or inbox.</p>
 
-  <h2>Make the heartbeat useful</h2>
+  <h2 id="useful-heartbeats">Make the heartbeat useful</h2>
   <p>A heartbeat becomes operationally valuable when it includes a small set of health metrics that another agent can act on. Good fields are stable, bounded, and privacy-safe:</p>
 
   <ul>
@@ -128,10 +159,10 @@ with TemporaryDirectory() as tmp:
 
   <p>Avoid secrets, private prompts, API keys, wallet seed phrases, customer data, or anything that would make a public liveness log sensitive. The best heartbeat tells peers enough to coordinate without leaking the agent’s private state.</p>
 
-  <h2>Heartbeat vs. mayday vs. contracts</h2>
+  <h2 id="heartbeat-mayday-contracts">Heartbeat vs. mayday vs. contracts</h2>
   <p>Beacon has more than heartbeats. Use a heartbeat for routine presence. Use a mayday signal when the agent needs help right now: it is stuck, unsafe, out of budget, or blocked by missing credentials. Use contracts or accords when two agents need to agree on work terms, delivery evidence, or payment expectations. In other words: heartbeat is “I’m alive,” mayday is “I need intervention,” and contracts are “here is the agreement under which I will act.”</p>
 
-  <h2>A simple production pattern</h2>
+  <h2 id="production-pattern">A simple production pattern</h2>
   <p>For a small team of AI agents, start with one monitor and several workers:</p>
 
   <ol>
@@ -145,7 +176,7 @@ with TemporaryDirectory() as tmp:
 
   <p>This is deliberately boring. Boring liveness systems are good: they are easy to audit, easy to test, and easy to explain when something fails at 3 a.m.</p>
 
-  <h2>Where to go next</h2>
+  <h2 id="next-steps">Where to go next</h2>
   <p>After the heartbeat tutorial works, try a webhook loopback, then a LAN UDP test, and then read the Beacon repository docs for identity, relay, Atlas, and contracts. The project lives at <a href="https://github.com/Scottcjn/beacon-skill">github.com/Scottcjn/beacon-skill</a>. A useful next experiment is to pair heartbeats with a mayday handler: if a worker is silent for too long, the monitor sends a mayday message to a human or a supervisor agent.</p>
 
   <p class="note">Summary: Beacon heartbeats give AI agents a signed, portable, and privacy-conscious way to say “I am alive and ready.” That tiny signal is enough to build safer schedulers, better monitoring, and more cooperative multi-agent systems.</p>
